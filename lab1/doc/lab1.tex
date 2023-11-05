@@ -1,0 +1,113 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./img/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \listoffigures
+    \newpage
+
+    \section{Постановка задачи}
+    \quad Имеется две вещественные выборки $ \overline{X_{1}}, \overline{X_{2}} $.
+    Необходимо построить из них две интервальные выборки $ X_{1}, X_{2} $
+    и найти такой вещественный коэффициент $ R $, что выборка $ X_{1} \cup R X_{2} $
+    будет наиболее совместной в смысле индекса Жаккара.
+
+    \section{Теория}
+    \subsection{Индекс Жаккара}
+    \quad Индекс Жаккара определяет степень совместности двух интервалов $ x, y $.
+    \begin{equation}
+        JK(x, y) = \frac{wid(x \land y)}{wid(x \lor y)}
+        \label{e:simplejaccard}
+    \end{equation}
+
+    Здесь $ \land, \lor $ представляют собой операции взятия минимума и максимума по включению
+    в полной арифметике Каухера.
+    Формула \ref{e:simplejaccard} легко может быть обобщена на случай интервальной выборки $ X = \{x_i\}_{i=1}^{n} $.
+    
+    \begin{equation}
+        JK(X) = \frac{wid(\land_{i=1,n}x_i)}{wid(\lor_{i=1,n}x_i)}
+        \label{e:jaccard}
+    \end{equation}
+
+    Видно, что $ JK(X) \in [-1, 1] $. Для удобства перенормируем значение $ JK(X) $
+    так, чтобы оно было в интервале $ [0, 1] $.
+
+    \begin{equation}
+        JK(X) = \frac{1}{2} + \frac{1}{2} JK(X)
+    \end{equation}
+
+    \subsection{Нахождение оптимального значения R}
+    Для нахождения оптимально $ R $ необоходимо сначала найти верхнюю и нижнюю границы $ \underline{R}, \overline{R} $.
+
+    \begin{equation}
+        \underline{R} = \frac{\min_{i=1,n}\underline{x_{1i}}}{\max_{i=1,n}\overline{x_{2i}}}
+    \end{equation}
+    \begin{equation}
+        \overline{R} = \frac{\max_{i=1,n}\overline{x_{1i}}}{\min_{i=1,n}\underline{x_{2i}}}
+    \end{equation}
+
+    Затем оптимальное значение $ R $ может быть найдено методом половинного деления.
+
+    \section{Реализация}
+    \quad Весь код написан на языке Python (версии 3.7.3).
+    \href{https://github.com/kirillkuks/Intervals/tree/master/lab1}{Ссылка на GitHub с исходным кодом}.
+
+    \section{Результаты}
+    \quad Данные были взяты из файлов.
+    Обынтерваливание было произведенно следующим образом.
+    \begin{equation}
+        x = [x_0 - \varepsilon, x_0 + \varepsilon], \varepsilon \in U(0.01, 0.05)
+    \end{equation}
+    где $ x_0 $ - точечное значение, $ U(0.01, 0.05) $ - равномерное распределение.
+    
+    Сначала посмотрим на исходные интервальные выборки $ X_1, X_2 $.
+    \plot{X1X2}{Исходные интервальные выборки}{p:x1x2}
+
+    Посчитаем индекс Жаккара обеих выборок. $ JK(X_1) = 0.734, JK(X_2) = 0.721 $.
+    Верхняя и нижняя границы $ \underline{R} = -0.967, \overline{R} = -0.961 $.
+    Найдем оптимальное значение $ R $
+    (для наглядности на графике \ref{p:jaccard} изабражён более широкий интервал значений $ R $).
+  
+    \plot{Jaccard}{Зависимость индекса Жаккара от значения $R$}{p:jaccard}
+
+    Оптимаьное значние $ R $ оказалось равно $ R_{opt} = -0.963 $
+    Посторим объединённыую выборку $ X_1 \cup R_{opt} X_2 $.
+
+    \plot{X1RX2}{Объединённая выборка $ X_1 \cup R_{opt} X_2 $}{p:x1rx2}
+
+    \section{Обсуждение}
+
+\end{document}
