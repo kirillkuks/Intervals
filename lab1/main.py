@@ -86,8 +86,8 @@ def main():
     dataBuilder.change_workin_dir(database_dir + '\\-0_5V')
     intervals_x2 = dataBuilder.load_interval_sample('-0_5V_6.txt')
 
-    intervals_x1 = Interval.expand_intervals(intervals_x1, 0.05)
-    intervals_x2 = Interval.expand_intervals(intervals_x2, 0.05)
+    #intervals_x1 = Interval.expand_intervals(intervals_x1, 0.05)
+    #intervals_x2 = Interval.expand_intervals(intervals_x2, 0.05)
 
     print(f"intervals_x1 Jaccard = {Interval.jaccard_index(intervals_x1)}")
     print(f"intervals_x2 Jaccard = {Interval.jaccard_index(intervals_x2)}")
@@ -101,6 +101,7 @@ def main():
 
     r = solver.solve(intervals_x1, intervals_x2)
     solver.plot(intervals_x1, intervals_x2, 1000, True)
+    solver.plot_moda(intervals_x1, intervals_x2, 100)
 
     solver.plot_intervals(
         [intervals_x1, Interval.scale_intervals(intervals_x2, r)],

@@ -58,8 +58,21 @@ class JaccardSolver:
         plt.title(r'Jaccard index of X_1 union R * X_2')
         plt.xlabel('R')
         plt.ylabel('Jaccard index')
-        plt.savefig(f'{img_save_dst()}Jaccard.png')
+        plt.savefig(f'{img_save_dst()}_Jaccard.png')
         plt.clf()
+
+    def plot_moda(self, intervals1: List[Interval], intervals2: List[Interval], size: int) -> None:
+        self.x_1, self.x_2 = intervals1, intervals2
+        r_1, r_2 = self._find_edges()
+        r_1, r_2 = r_1 - 0.25, r_2 + 0.25
+        width = r_2 - r_1
+        delta = width / size
+
+        x = [r_1 + i * delta for i in range(size)]
+        y = [Interval.find_moda(self._build_sample(x_k)) for x_k in x]
+
+        plt.plot(x, y)
+        plt.show()
 
 
     def plot_intervals(
@@ -84,7 +97,7 @@ class JaccardSolver:
 
         plt.legend()
         plt.title(title)
-        plt.savefig(f'{img_save_dst()}{save_name}.png')
+        plt.savefig(f'{img_save_dst()}_{save_name}.png')
         plt.clf()
 
 

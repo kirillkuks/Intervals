@@ -43,7 +43,34 @@ class Interval:
     @staticmethod
     def combine_intervals(intervals1 : List[Interval], intervals2: List[Interval]) -> List[Interval]:
         return [j for i in [intervals1, intervals2] for j in i]
+    
+    @staticmethod
+    def find_moda(intervals: List[Interval]) -> Interval:
+        intervals_edges = []
+        for interval in intervals:
+            intervals_edges.append(interval.left)
+            intervals_edges.append(interval.right)
 
+        intervals_edges.sort()
+
+        moda = Interval(0, 0)
+        intervals_in_moda = 0
+        for i, point in enumerate(intervals_edges):
+            if i == len(intervals_edges) - 1:
+                break
+
+            current_interval = Interval(point, intervals_edges[i + 1])
+            current_interval_in_moda = 0
+
+            for interval in intervals:
+                current_interval_in_moda += interval.contains(current_interval.mid())
+
+            if current_interval_in_moda > intervals_in_moda:
+                moda = current_interval
+                intervals_in_moda = current_interval_in_moda
+
+        #print(f'moda = {moda.to_str()}, intervals = {intervals_in_moda}')
+        return intervals_in_moda
 
     def __init__(self, x: float, y: float, force_right: bool = False) -> None:
         self.left =  min(x, y) if force_right else x
@@ -69,3 +96,6 @@ class Interval:
 
     def to_str(self) -> str:
         return f'[{self.left}, {self.right}]'
+    
+    def contains(self, val: float) -> bool:
+        return self.left <= val <= self.right;
