@@ -1,0 +1,95 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./img/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \listoffigures
+    \newpage
+
+    \section{Постановка задачи}
+    \section{Теория}
+    \subsection{Точечная линейная регрессия}
+    \quad Рассматривается задача восстановления зависимости для выборки
+    $ (X, \textbf(Y))$, $ X = \{x_i\}_{i=1}^{n}, \textbf{Y} = \{\textbf{y}_i\}_{i=1}^{n} $,
+    $ x_i $ - точеный, $ \textbf{y}_i $ - интервальный.
+    Пусть искомая модель задана в классе линейных функций
+
+    \begin{equation}
+        y = \beta_0 + \beta_1 x
+    \end{equation}
+
+    Поставим задачу оптимизацию \ref{e:task} для нахождения точечных оценок
+    параметров $ \beta_0, \beta_1 $.
+
+    \begin{equation}
+        \begin{gathered}
+            \sum_{i = 1}^{m}w_{i} \to \min \\
+            \text{mid}\textbf{y}_{i} - w_{i} \cdot \text{rad}\textbf{y}_{i} \leq X\beta \leq \text{mid}\textbf{y}_{i} + w_{i} \cdot \text{rad}\textbf{y}_{i} \\
+            w_{i} \geq 0, i = 1, ..., m \\
+            w, \beta - ?
+        \end{gathered}
+        \label{e:task}
+    \end{equation}
+    
+    Задачу \ref{e:task} можно решить методами линейного программирования.
+
+    \subsection{Информационное множество}
+    \quad \textsl{Информационным множеством} задачи восстановления зависимости
+    будем называть множество значений всех параметров зависимости,
+    совместных с данными в каком-то смысле. 
+
+    \textsl{Коридором совместных зависимостей} задачи восстановления зависимости
+    называется многозначное множество отображений $ \Upsilon $, сопоставляющее
+    каждому значению аргумента $ x $ множество
+    
+    \begin{equation}
+        \Upsilon(x) = \bigcup_{\beta \in \Omega} f(x, \beta)
+    \end{equation}
+    , где $ \Omega $ - информационное множество, $ x $ - вектор переменных, $ \beta $ - вектор оцениваемых параметров. 
+
+    Информационное множество может быть построено, как пересечение полос, заданных
+    
+    \begin{equation}
+        \underline{\textbf{y}_i} \leq \beta_0 + \beta_1 x_{i1} + ... + \beta_m x_{im} \leq \overline{\textbf{y}_i}
+    \end{equation}
+    , где $ i = \overline{1, n} \textbf{y}_i \in \textbf{Y}, x_i \in X $, $ X $ - точечная выборка переменных,
+    $ \textbf{Y} $ - интервальная выборка откликов.
+
+    \section{Реализация}
+    \section{Результаты}
+    \section{Обсуждение}
+
+\end{document}
