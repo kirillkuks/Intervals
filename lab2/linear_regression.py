@@ -10,6 +10,10 @@ from matplotlib import pyplot as plt
 from math import inf
 
 
+def img_save_dst() -> str:
+    return 'doc\\img\\'
+
+
 class LinearRegression:
     def __init__(self, x: List[float], y: List[Interval]) -> None:
         assert len(x) == len(y)
@@ -86,14 +90,18 @@ class Plotter:
     def __init__(self) -> None:
         pass
 
-    def plot_sample(self, x: List[float], y: List[Interval], show: bool = False) -> None:
+    def plot_sample(self, x: List[float], y: List[Interval], show: bool = False, title: str='') -> None:
         for x_i, y_i in zip(x, y):
             plt.plot((x_i, x_i), (y_i.left, y_i.right), 'b')
 
         if show:
-            plt.show()
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.title(title)
+            plt.savefig(f'{img_save_dst()}{title}.png')
+            plt.clf()
 
-    def plot_inform_set(self, inform_set: Polygon, points: List[Plotter.Point] = []) -> None:
+    def plot_inform_set(self, inform_set: Polygon, points: List[Plotter.Point] = [], title: str = '') -> None:
         plt.plot(*inform_set.exterior.xy, label='inform set edge')
 
         for point in points:
@@ -109,24 +117,35 @@ class Plotter:
 
         plt.xlabel('beta1')
         plt.ylabel('beta0')
-        plt.title('Inform set')
+        plt.title(f'Inform set')
         plt.legend(loc='upper right')
-        plt.show()
+        plt.savefig(f'{img_save_dst()}InformSet{title}.png')
+        plt.clf()
 
-    def plot(self, regression: LinearRegression) -> None:
+    def plot(self, regression: LinearRegression, title: str = '') -> None:
         self.plot_sample(regression.x, regression.y)
 
         params = regression.build_point_regression()
-        plt.plot(regression.x, [params[0] + params[1] * x for x in regression.x], 'r')
+        plt.plot(
+            regression.x,
+            [params[0] + params[1] * x for x in regression.x],
+            'r',
+            label=f'y = {round(params[0], 3)} + {round(params[1], 3)}x'
+        )
 
-        plt.show()
-
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Point Regression {title}')
+        plt.legend()
+        plt.savefig(f'{img_save_dst()}PointRegression{title}.png')
+        plt.clf()
     
     def plot_corridor(self,
                       regression: LinearRegression,
                       predict: bool = False,
                       pos_x_predict_size = 25,
-                      neg_x_predict_size = 25
+                      neg_x_predict_size = 25,
+                      title: str = ''
                       ) -> None:
         self.plot_sample(regression.x, regression.y)
 
@@ -151,7 +170,6 @@ class Plotter:
             y_min.append(mi)
             y_max.append(ma)
 
-
         if predict:
             i = 0
             x = regression.x[-1]
@@ -164,13 +182,17 @@ class Plotter:
 
                 i += 1
 
-        plt.fill_between(xs, y_min, y_max, alpha=0.5)
+        plt.fill_between(xs, y_min, y_max, alpha=0.5, label='inform set corridor')
 
         params = regression.build_point_regression()
-        plt.plot(xs, [params[0] + params[1] * x for x in xs], 'r')
+        plt.plot(xs, [params[0] + params[1] * x for x in xs], 'r', label=f'y = {round(params[0], 3)} + {round(params[1], 3)}x')
 
-        plt.show()
-
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Imform set corridor')
+        plt.legend()
+        plt.savefig(f'{img_save_dst()}InformSetCorridor{title}.png')
+        plt.clf()
 
     def _find_min_max_edges_in_corridor(self, x: float, inform_set: Polygon) -> Tuple[float, float]:
         mi, ma = inf, -inf

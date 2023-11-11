@@ -59,23 +59,28 @@ def main():
     working_dir = database_dir + '\\+0_5V'
 
     dataBuilder = IntervalDataBuilder(working_dir)
-    intervals_x1 = dataBuilder.load_interval_sample('+0_5V_85.txt')
-    #intervals_x1 = Interval.expand_intervals(intervals_x1, 0.05)
-    x = [i for i in range(len(intervals_x1))]
+    intervals_y1 = dataBuilder.load_interval_sample('+0_5V_85.txt')
+    intervals_y2 = Interval.expand_intervals(intervals_y1, 0.05)
 
-    regression = LinearRegression(x, intervals_x1)
-    regression.build_point_regression()
-    regression.build_inform_set()
+    x = [i for i in range(len(intervals_y1))]
 
-    plotter = Plotter()
-    plotter.plot(regression)
+    for interval_responses, sample_name in zip([intervals_y1, intervals_y2], ['X1', 'X2']):
+        print(f'Jaccard Index of {sample_name}: {Interval.jaccard_index(interval_responses)}')
 
-    plotter.plot_corridor(regression, predict=True)
+        regression = LinearRegression(x, interval_responses)
+        regression.build_point_regression()
+        regression.build_inform_set()
 
-    points = [
-        Plotter.Point(regression.regression_params[1], regression.regression_params[0], 'point regression')
-        ]
-    plotter.plot_inform_set(regression.inform_set, points)
+        plotter = Plotter()
+        plotter.plot_sample(x, interval_responses, True, sample_name)
+        plotter.plot(regression, sample_name)
+
+        plotter.plot_corridor(regression, predict=True, title=sample_name)
+
+        points = [
+            Plotter.Point(regression.regression_params[1], regression.regression_params[0], 'point regression')
+            ]
+        plotter.plot_inform_set(regression.inform_set, points, sample_name)
 
 
 if __name__ == '__main__':
