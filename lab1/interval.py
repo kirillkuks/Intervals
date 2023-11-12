@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Tuple
 
 
 class Interval:
@@ -45,13 +45,15 @@ class Interval:
         return [j for i in [intervals1, intervals2] for j in i]
     
     @staticmethod
-    def find_moda(intervals: List[Interval]) -> Interval:
+    def find_moda(intervals: List[Interval]) -> Tuple[Interval, List[int], List[Interval]]:
         intervals_edges = []
         for interval in intervals:
             intervals_edges.append(interval.left)
             intervals_edges.append(interval.right)
 
         intervals_edges.sort()
+        moda_hist = [0 for _ in range(len(intervals_edges) - 1)]
+        moda_bar_intervals = [Interval(0, 0) for _ in range(len(intervals_edges) - 1)]
 
         moda = Interval(0, 0)
         intervals_in_moda = 0
@@ -69,8 +71,11 @@ class Interval:
                 moda = current_interval
                 intervals_in_moda = current_interval_in_moda
 
+            moda_hist[i] = current_interval_in_moda
+            moda_bar_intervals[i] = current_interval
+
         #print(f'moda = {moda.to_str()}, intervals = {intervals_in_moda}')
-        return intervals_in_moda
+        return intervals_in_moda, moda_hist, moda_bar_intervals
 
     def __init__(self, x: float, y: float, force_right: bool = False) -> None:
         self.left =  min(x, y) if force_right else x

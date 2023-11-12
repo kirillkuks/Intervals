@@ -22,7 +22,7 @@ def is_float(value: str) -> bool:
 class IntervalDataBuilder:
     def __init__(self, working_dir: str) -> None:
         self.working_dir = working_dir
-        self.rnd = rnd.default_rng()
+        self.rnd = rnd.default_rng(42)
 
     def get_eps(self) -> float:
         return self.rnd.uniform(0.01, 0.05)
@@ -101,12 +101,24 @@ def main():
 
     r = solver.solve(intervals_x1, intervals_x2)
     solver.plot(intervals_x1, intervals_x2, 1000, True)
-    solver.plot_moda(intervals_x1, intervals_x2, 100)
+
+    inner_est = solver.find_r_est(intervals_x1, intervals_x2, 'inner', 1000, 0.95)
+    outer_est = solver.find_r_est(intervals_x1, intervals_x2, 'outer', 100, 0.95)
+
+    solver.plot_sample_moda(intervals_x1, 'X1')
+    solver.plot_sample_moda(intervals_x2, 'X2')
+
+    solver.plot_moda_r(intervals_x1, intervals_x2, 100)
+    solver.plot_inner_outer_estimations(intervals_x1, intervals_x2, 100, True, r, inner_est, outer_est, 0.95)
+
+    solver.plot_sample_moda(
+        Interval.combine_intervals(intervals_x1, Interval.scale_intervals(intervals_x2, r)),
+        'X1 union R_opt X2', 'X1RX2')
 
     solver.plot_intervals(
         [intervals_x1, Interval.scale_intervals(intervals_x2, r)],
-        ['X1', 'R * X2'],
-        'X1 union R * X2',
+        ['X1', 'R_opt * X2'],
+        'X1 union R_opt * X2',
         'X1RX2',
         False)
 
