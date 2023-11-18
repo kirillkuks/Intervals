@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Tuple
 from matplotlib import pyplot as plt
 from interval import Interval
 from linear_regression import LinearRegression, Plotter
@@ -17,54 +17,80 @@ def is_float(value: str) -> bool:
         return False
 
 
+class DataSample:
+    kPlus05 = 0,
+    kMinus05 = 1,
+    kZero = 2,
+
+    _kDict = {
+        kPlus05: '+0_5V',
+        kMinus05: '-0_5V',
+        kZero: 'ZeroLine'
+    }
+
+    @staticmethod
+    def to_str(data_sample: int) -> str:
+        return DataSample._kDict[data_sample]
+
 
 class IntervalDataBuilder:
     def __init__(self, working_dir: str) -> None:
         self.working_dir = working_dir
-        self.rnd = rnd.default_rng()
+        self.rnd = rnd.default_rng(42)
 
     def get_eps(self) -> float:
         return self.rnd.uniform(0.01, 0.05)
 
-    def load_interval_sample(self, filename: str) -> List[Interval]:
-        intervals = []
-        x = []
+    def load_sample(self, filename: str) -> List[float]:
+        with open(f'{self.working_dir}\\{filename}') as f:
+            stop_position_str = f.readline()
+            stop_position = int(stop_position_str[stop_position_str.index('=') + 1:])
 
-        with open(self.working_dir + '\\' + filename) as f:
-            for i, fileline in enumerate(f.readlines()):
-                if i < 1:
-                    continue
-                if i > 100:
-                    break
-
+            deltas = []
+            for fileline in f.readlines():
                 numbers = fileline.split(' ')
                 floats = [float(number) for number in numbers if is_float(number)]
 
-                x.append(floats[1])
-                center = floats[1]
-                eps = self.get_eps()
-                intervals.append(Interval(center - eps, center + eps, True))
+                deltas.append(floats[1])
+            
+            stop_position = len(deltas) - stop_position
+            deltas = deltas[stop_position:] + deltas[:stop_position]
+            return deltas
+        
+    def load_data(self, data_sample: DataSample, sample_idx: int) -> Tuple[List[float], List[float]]:
+        data_subdir_name = DataSample.to_str(data_sample)
+        data = self.load_sample(f'{data_subdir_name}\\{data_subdir_name}_{sample_idx}.txt')
 
-        return intervals
-    
-    
-    def change_workin_dir(self, new_working_dir: str) -> None:
-        self.working_dir = new_working_dir
+        deltas_subdir_name = DataSample.to_str(DataSample.kZero)
+        deltas = self.load_sample(f'{deltas_subdir_name}\\{deltas_subdir_name}_{sample_idx}.txt')
+
+        return data, deltas
+        
+    def make_intervals(self, point_sample: List[float]) -> List[Interval]:
+        eps = 1.0 / (1 << 14) * 100.0
+        return [Interval(x - eps, x + eps) for x in point_sample]
 
 
 def main():
     working_dir = os.getcwd()
     working_dir = working_dir[:working_dir.rindex('\\')]
     database_dir = working_dir + '\\data\\dataset1'
-    working_dir = database_dir + '\\+0_5V'
 
-    dataBuilder = IntervalDataBuilder(working_dir)
-    intervals_y1 = dataBuilder.load_interval_sample('+0_5V_85.txt')
-    intervals_y2 = Interval.expand_intervals(intervals_y1, 0.05)
+    dataBuilder = IntervalDataBuilder(database_dir)
 
-    x = [i for i in range(len(intervals_y1))]
+    start_pos, end_pos = 500, 700
 
-    for interval_responses, sample_name in zip([intervals_y1, intervals_y2], ['X1', 'X2']):
+    data, deltas = dataBuilder.load_data(DataSample.kPlus05, 0)
+    sample = [x_k - delta_k for x_k, delta_k in zip(data, deltas)]
+    interval_sample1 = dataBuilder.make_intervals(sample)[start_pos:end_pos]
+
+    data2, deltas2 = dataBuilder.load_data(DataSample.kMinus05, 42)
+    sample2 = [x_k - delta_k for x_k, delta_k in zip(data2, deltas2)]
+    interval_sample2 = dataBuilder.make_intervals(sample2)[start_pos:end_pos]
+
+    x = [i for i in range(len(interval_sample1))]
+
+    for interval_responses, sample_name in zip([interval_sample1, interval_sample2], ['X1', 'X2']):
         print(f'Jaccard Index of {sample_name}: {Interval.jaccard_index(interval_responses)}')
 
         regression = LinearRegression(x, interval_responses)

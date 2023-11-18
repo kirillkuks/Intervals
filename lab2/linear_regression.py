@@ -98,7 +98,7 @@ class Plotter:
             plt.xlabel('x')
             plt.ylabel('y')
             plt.title(title)
-            plt.savefig(f'{img_save_dst()}{title}.png')
+            plt.savefig(f'{img_save_dst()}{title}.png', dpi=200)
             plt.clf()
 
     def plot_inform_set(self, inform_set: Polygon, points: List[Plotter.Point] = [], title: str = '') -> None:
@@ -119,7 +119,7 @@ class Plotter:
         plt.ylabel('beta0')
         plt.title(f'Inform set')
         plt.legend(loc='upper right')
-        plt.savefig(f'{img_save_dst()}InformSet{title}.png')
+        plt.savefig(f'{img_save_dst()}InformSet{title}.png', dpi=200)
         plt.clf()
 
     def plot(self, regression: LinearRegression, title: str = '') -> None:
@@ -130,14 +130,14 @@ class Plotter:
             regression.x,
             [params[0] + params[1] * x for x in regression.x],
             'r',
-            label=f'y = {round(params[0], 3)} + {round(params[1], 3)}x'
+            label=f'y = {round(params[0], 3)} + {params[1]:.3e}x'
         )
 
         plt.xlabel('x')
         plt.ylabel('y')
         plt.title(f'Point Regression {title}')
         plt.legend()
-        plt.savefig(f'{img_save_dst()}PointRegression{title}.png')
+        plt.savefig(f'{img_save_dst()}PointRegression{title}.png', dpi=200)
         plt.clf()
     
     def plot_corridor(self,
@@ -185,13 +185,13 @@ class Plotter:
         plt.fill_between(xs, y_min, y_max, alpha=0.5, label='inform set corridor')
 
         params = regression.build_point_regression()
-        plt.plot(xs, [params[0] + params[1] * x for x in xs], 'r', label=f'y = {round(params[0], 3)} + {round(params[1], 3)}x')
+        plt.plot(xs, [params[0] + params[1] * x for x in xs], 'r', label=f'y = {round(params[0], 3)} + {params[1]:.3e}x')
 
         plt.xlabel('x')
         plt.ylabel('y')
-        plt.title(f'Imform set corridor')
+        plt.title(f'Imform set corridor {title}')
         plt.legend()
-        plt.savefig(f'{img_save_dst()}InformSetCorridor{title}.png')
+        plt.savefig(f'{img_save_dst()}InformSetCorridor{title}.png', dpi=200)
         plt.clf()
 
     def _find_min_max_edges_in_corridor(self, x: float, inform_set: Polygon) -> Tuple[float, float]:
