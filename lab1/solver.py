@@ -47,7 +47,7 @@ class JaccardSolver:
         assert 0.0 < alpha < 1.0
         self.x_1, self.x_2 = intervals1, intervals2
         r_1, r_2 = self._find_edges()
-        r_1, r_2 = r_1 - 0.5, r_2 + 0.5
+        r_1, r_2 = r_1 - 0.1, r_2 + 0.1
 
         width = r_2 - r_1
         delta = width / size
@@ -76,7 +76,6 @@ class JaccardSolver:
             if r_min is not None and r_max is None and y_k < edge:
                 r_max = x[i - 1]
 
-        print(f'{est} est = {Interval(r_min, r_max).to_str()}')
         return Interval(r_min, r_max)
 
 
@@ -117,7 +116,7 @@ class JaccardSolver:
             ) -> None:
         self.x_1, self.x_2 = intervals1, intervals2
         r_1, r_2 = self._find_edges()
-        r_1, r_2 = r_1 - 0.25, r_2 + 0.25
+        r_1, r_2 = r_1 - 0.1, r_2 + 0.1
         width = r_2 - r_1
         delta = width / size
 
@@ -181,7 +180,7 @@ class JaccardSolver:
             title: str = '',
             short_name: str = None
             ) -> None:
-        _, moda_hist, moda_intervals = Interval.find_moda(intervals)
+        _, moda_hist, moda_intervals, moda = Interval.find_moda(intervals)
 
         x, y = [], []
 
@@ -189,11 +188,13 @@ class JaccardSolver:
             x.extend([interval.left, interval.right])
             y.extend([bar_size, bar_size])
 
+        print(f'Moda for {title}: {moda.to_str()}, wid = {moda.wid()}')
+
         plt.plot(x, y)
         plt.xlabel('data')
         plt.ylabel('intervals in intersection')
-        plt.title(f'moda {short_name if short_name is not None else title} hist')
-        plt.savefig(f'{img_save_dst()}_Moda{title}Hist.png')
+        plt.title(f'moda {title} hist')
+        plt.savefig(f'{img_save_dst()}_Moda{short_name if short_name is not None else title}Hist.png')
         plt.clf()
 
     def plot_intervals(
@@ -219,7 +220,7 @@ class JaccardSolver:
 
         plt.legend()
         plt.title(title)
-        plt.savefig(f'{img_save_dst()}_{save_name}.png')
+        plt.savefig(f'{img_save_dst()}_{save_name}.png', dpi=200)
         plt.clf()
 
 

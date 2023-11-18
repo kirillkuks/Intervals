@@ -45,7 +45,7 @@ class Interval:
         return [j for i in [intervals1, intervals2] for j in i]
     
     @staticmethod
-    def find_moda(intervals: List[Interval]) -> Tuple[Interval, List[int], List[Interval]]:
+    def find_moda(intervals: List[Interval]) -> Tuple[int, List[int], List[Interval], Interval]:
         intervals_edges = []
         for interval in intervals:
             intervals_edges.append(interval.left)
@@ -75,7 +75,7 @@ class Interval:
             moda_bar_intervals[i] = current_interval
 
         #print(f'moda = {moda.to_str()}, intervals = {intervals_in_moda}')
-        return intervals_in_moda, moda_hist, moda_bar_intervals
+        return intervals_in_moda, moda_hist, moda_bar_intervals, moda
 
     def __init__(self, x: float, y: float, force_right: bool = False) -> None:
         self.left =  min(x, y) if force_right else x

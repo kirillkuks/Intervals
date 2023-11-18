@@ -1,6 +1,7 @@
+from __future__ import annotations
 import os
 
-from typing import List
+from typing import List, Tuple
 from matplotlib import pyplot as plt
 from interval import Interval
 from solver import JaccardSolver
@@ -18,6 +19,21 @@ def is_float(value: str) -> bool:
         return False
 
 
+class DataSample:
+    kPlus05 = 0,
+    kMinus05 = 1,
+    kZero = 2,
+
+    _kDict = {
+        kPlus05: '+0_5V',
+        kMinus05: '-0_5V',
+        kZero: 'ZeroLine'
+    }
+
+    @staticmethod
+    def to_str(data_sample: int) -> str:
+        return DataSample._kDict[data_sample]
+
 
 class IntervalDataBuilder:
     def __init__(self, working_dir: str) -> None:
@@ -27,101 +43,96 @@ class IntervalDataBuilder:
     def get_eps(self) -> float:
         return self.rnd.uniform(0.01, 0.05)
 
-    def load_interval_sample(self, filename: str) -> List[Interval]:
-        intervals = []
-        x = []
+    def load_sample(self, filename: str) -> List[float]:
+        with open(f'{self.working_dir}\\{filename}') as f:
+            stop_position_str = f.readline()
+            stop_position = int(stop_position_str[stop_position_str.index('=') + 1:])
 
-        with open(self.working_dir + '\\' + filename) as f:
-            for i, fileline in enumerate(f.readlines()):
-                if i < 1:
-                    continue
-                if i > 100:
-                    break
-
+            deltas = []
+            for fileline in f.readlines():
                 numbers = fileline.split(' ')
                 floats = [float(number) for number in numbers if is_float(number)]
 
-                x.append(floats[1])
-                center = floats[1]
-                eps = self.get_eps()
-                intervals.append(Interval(center - eps, center + eps, True))
+                deltas.append(floats[1])
+            
+            stop_position = len(deltas) - stop_position
+            deltas = deltas[stop_position:] + deltas[:stop_position]
+            return deltas
+        
+    def load_data(self, data_sample: DataSample, sample_idx: int) -> Tuple[List[float], List[float]]:
+        data_subdir_name = DataSample.to_str(data_sample)
+        data = self.load_sample(f'{data_subdir_name}\\{data_subdir_name}_{sample_idx}.txt')
 
-        return intervals
+        deltas_subdir_name = DataSample.to_str(DataSample.kZero)
+        deltas = self.load_sample(f'{deltas_subdir_name}\\{deltas_subdir_name}_{sample_idx}.txt')
+
+        return data, deltas
+        
+    def make_intervals(self, point_sample: List[float]) -> List[Interval]:
+        eps = 1.0 / (1 << 14) * 100.0
+        return [Interval(x - eps, x + eps) for x in point_sample]
     
-    
-    def change_workin_dir(self, new_working_dir: str) -> None:
-        self.working_dir = new_working_dir
-
-    def find_biggest_jaccard(self) -> None:
-        file_base_name = self.working_dir[self.working_dir.rindex('\\') + 1:]
-
-        i = 0
-        biggest_idx = 0
-        biggest_jaccard = 0
-        while True:
-            new_filename = file_base_name + f'_{i}.txt'
-
-            if os.path.isfile(self.working_dir + "\\" + new_filename) == False:
-                break
-
-            intervals_data = self.load_interval_sample(new_filename)
-            jaccard = Interval.jaccard_index(intervals_data)
-            if jaccard > biggest_jaccard:
-                biggest_jaccard = jaccard
-                biggest_idx = i
-
-            i += 1
-
-        return biggest_idx
-
 
 def main():
     working_dir = os.getcwd()
     working_dir = working_dir[:working_dir.rindex('\\')]
     database_dir = working_dir + '\\data\\dataset1'
-    working_dir = database_dir + '\\+0_5V'
 
-    dataBuilder = IntervalDataBuilder(working_dir)
-    intervals_x1 = dataBuilder.load_interval_sample('+0_5V_85.txt')
-    dataBuilder.change_workin_dir(database_dir + '\\-0_5V')
-    intervals_x2 = dataBuilder.load_interval_sample('-0_5V_6.txt')
+    dataBuilder = IntervalDataBuilder(database_dir)
 
-    #intervals_x1 = Interval.expand_intervals(intervals_x1, 0.05)
-    #intervals_x2 = Interval.expand_intervals(intervals_x2, 0.05)
+    start_pos, end_pos = 500, 700
 
-    print(f"intervals_x1 Jaccard = {Interval.jaccard_index(intervals_x1)}")
-    print(f"intervals_x2 Jaccard = {Interval.jaccard_index(intervals_x2)}")
+    data, deltas = dataBuilder.load_data(DataSample.kPlus05, 0)
+    sample = [x_k - delta_k for x_k, delta_k in zip(data, deltas)]
+    interval_sample1 = dataBuilder.make_intervals(sample)[start_pos:end_pos]
+
+    data2, deltas2 = dataBuilder.load_data(DataSample.kMinus05, 42)
+    sample2 = [x_k - delta_k for x_k, delta_k in zip(data2, deltas2)]
+    interval_sample2 = dataBuilder.make_intervals(sample2)[start_pos:end_pos]
+
+    # x = [i for i in range(len(deltas))]
+
+    # plt.plot(x, sample2, 'bo')
+    # plt.plot(x, data2, 'go')
+    # plt.show()
 
     solver = JaccardSolver()
+    solver.plot_intervals([interval_sample1], ['X1'], 'X1', 'X1')
+    solver.plot_intervals([interval_sample2], ['X2'], 'X2', 'X2')
+
+    print(f"intervals_x1 Jaccard = {Interval.jaccard_index(interval_sample1)}")
+    print(f"intervals_x2 Jaccard = {Interval.jaccard_index(interval_sample2)}")
+
     solver.plot_intervals(
-        [intervals_x1, intervals_x2],
+        [interval_sample1, interval_sample2],
         ['X1', 'X2'],
         'X1 and X2',
         'X1X2')
+    
+    r = solver.solve(interval_sample1, interval_sample2)
+    solver.plot(interval_sample1, interval_sample2, 1000, True)
 
-    r = solver.solve(intervals_x1, intervals_x2)
-    solver.plot(intervals_x1, intervals_x2, 1000, True)
-
-    inner_est = solver.find_r_est(intervals_x1, intervals_x2, 'inner', 1000, 0.95)
-    outer_est = solver.find_r_est(intervals_x1, intervals_x2, 'outer', 100, 0.95)
-
-    solver.plot_sample_moda(intervals_x1, 'X1')
-    solver.plot_sample_moda(intervals_x2, 'X2')
-
-    solver.plot_moda_r(intervals_x1, intervals_x2, 100)
-    solver.plot_inner_outer_estimations(intervals_x1, intervals_x2, 100, True, r, inner_est, outer_est, 0.95)
-
+    solver.plot_sample_moda(interval_sample1, 'X1')
+    solver.plot_sample_moda(interval_sample2, 'X2')
     solver.plot_sample_moda(
-        Interval.combine_intervals(intervals_x1, Interval.scale_intervals(intervals_x2, r)),
+        Interval.combine_intervals(interval_sample1, Interval.scale_intervals(interval_sample2, r)),
         'X1 union R_opt X2', 'X1RX2')
+    
+    solver.plot_moda_r(interval_sample1, interval_sample2, 75)
+
+    inner_est = solver.find_r_est(interval_sample1, interval_sample2, 'inner', 1000, 0.95)
+    print(f'inner est = {inner_est.to_str()}')
+    outer_est = solver.find_r_est(interval_sample1, interval_sample2, 'outer', 75, 0.95)
+    print(f'outer est = {outer_est.to_str()}')
+    solver.plot_inner_outer_estimations(interval_sample1, interval_sample2, 75, True, r, inner_est, outer_est, 0.95)
 
     solver.plot_intervals(
-        [intervals_x1, Interval.scale_intervals(intervals_x2, r)],
+        [interval_sample1, Interval.scale_intervals(interval_sample2, r)],
         ['X1', 'R_opt * X2'],
         'X1 union R_opt * X2',
         'X1RX2',
         False)
-
+    
     return
 
 
