@@ -83,10 +83,7 @@ def main():
     data, deltas = dataBuilder.load_data(DataSample.kPlus05, 0)
     sample = [x_k - delta_k for x_k, delta_k in zip(data, deltas)]
     interval_sample1 = dataBuilder.make_intervals(sample)[start_pos:end_pos]
-
-    data2, deltas2 = dataBuilder.load_data(DataSample.kMinus05, 42)
-    sample2 = [x_k - delta_k for x_k, delta_k in zip(data2, deltas2)]
-    interval_sample2 = dataBuilder.make_intervals(sample2)[start_pos:end_pos]
+    interval_sample2 = dataBuilder.make_intervals(data)[start_pos:end_pos]
 
     x = [i for i in range(len(interval_sample1))]
 

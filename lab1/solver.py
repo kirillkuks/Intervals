@@ -4,7 +4,7 @@ from interval import Interval
 
 
 def img_save_dst() -> str:
-    return 'doc\\img\\'
+    return 'doc\\img\\werr'
 
 
 class JaccardSolver:
@@ -100,7 +100,7 @@ class JaccardSolver:
         plt.title(r'Jaccard index of X_1 union R * X_2')
         plt.xlabel('R')
         plt.ylabel('Jaccard index')
-        plt.savefig(f'{img_save_dst()}_Jaccard.png')
+        plt.savefig(f'{img_save_dst()}_Jaccard.png', dpi=200)
         plt.clf()
 
     def plot_inner_outer_estimations(
@@ -154,7 +154,7 @@ class JaccardSolver:
 
         plt.title('Inner and outer R estimations')
         plt.legend()
-        plt.savefig(f'{img_save_dst()}_InnerOuter.png')
+        plt.savefig(f'{img_save_dst()}_InnerOuter.png', dpi=200)
         plt.clf()
 
     def plot_moda_r(self, intervals1: List[Interval], intervals2: List[Interval], size: int):
@@ -171,7 +171,7 @@ class JaccardSolver:
         plt.xlabel('R')
         plt.ylabel('intervals num in moda')
         plt.title('Intervals num in X1 union R * X2')
-        plt.savefig(f'{img_save_dst()}_ModaR.png')
+        plt.savefig(f'{img_save_dst()}_ModaR.png', dpi=200)
         plt.clf()
 
     def plot_sample_moda(
@@ -194,7 +194,7 @@ class JaccardSolver:
         plt.xlabel('data')
         plt.ylabel('intervals in intersection')
         plt.title(f'moda {title} hist')
-        plt.savefig(f'{img_save_dst()}_Moda{short_name if short_name is not None else title}Hist.png')
+        plt.savefig(f'{img_save_dst()}_Moda{short_name if short_name is not None else title}Hist.png', dpi=200)
         plt.clf()
 
     def plot_intervals(
