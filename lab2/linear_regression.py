@@ -117,7 +117,7 @@ class Plotter:
 
         plt.xlabel('beta1')
         plt.ylabel('beta0')
-        plt.title(f'Inform set')
+        plt.title(f'Inform set {title}')
         plt.legend(loc='upper right')
         plt.savefig(f'{img_save_dst()}InformSet{title}.png', dpi=200)
         plt.clf()
@@ -130,7 +130,8 @@ class Plotter:
             regression.x,
             [params[0] + params[1] * x for x in regression.x],
             'r',
-            label=f'y = {round(params[0], 3)} + {params[1]:.3e}x'
+            label=f'y = {round(params[0], 4)} + {round(params[1], 4)}x',
+            linewidth=1.0
         )
 
         plt.xlabel('x')
@@ -143,8 +144,8 @@ class Plotter:
     def plot_corridor(self,
                       regression: LinearRegression,
                       predict: bool = False,
-                      pos_x_predict_size = 25,
-                      neg_x_predict_size = 25,
+                      pos_x_predict_size = 5,
+                      neg_x_predict_size = 5,
                       title: str = ''
                       ) -> None:
         self.plot_sample(regression.x, regression.y)
@@ -152,8 +153,10 @@ class Plotter:
         y_min, y_max = [], []
         xs = []
 
+        predict_delta = 0.25
+
         if predict:
-            x = regression.x[0] - neg_x_predict_size
+            x = regression.x[0] - predict_delta * neg_x_predict_size
             while x < regression.x[0]:
                 mi, ma = self._find_min_max_edges_in_corridor(x, regression.inform_set)
 
@@ -161,7 +164,7 @@ class Plotter:
                 y_min.append(mi)
                 y_max.append(ma)
 
-                x += 1
+                x += predict_delta
 
         for x in regression.x:
             mi, ma = self._find_min_max_edges_in_corridor(x, regression.inform_set)
@@ -173,19 +176,25 @@ class Plotter:
         if predict:
             i = 0
             x = regression.x[-1]
-            while i < pos_x_predict_size:
+            while i < predict_delta * pos_x_predict_size:
                 mi, ma = self._find_min_max_edges_in_corridor(x + i, regression.inform_set)
 
                 xs.append(x + i)
                 y_min.append(mi)
                 y_max.append(ma)
 
-                i += 1
+                i += predict_delta
 
         plt.fill_between(xs, y_min, y_max, alpha=0.5, label='inform set corridor')
 
         params = regression.build_point_regression()
-        plt.plot(xs, [params[0] + params[1] * x for x in xs], 'r', label=f'y = {round(params[0], 3)} + {params[1]:.3e}x')
+        plt.plot(
+            xs,
+            [params[0] + params[1] * x for x in xs],
+            'r',
+            label=f'y = {round(params[0], 4)} + {round(params[1], 4)}x',
+            linewidth=1.0
+            )
 
         plt.xlabel('x')
         plt.ylabel('y')

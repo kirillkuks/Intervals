@@ -4,7 +4,7 @@ from interval import Interval
 
 
 def img_save_dst() -> str:
-    return 'doc\\img\\werr'
+    return 'doc\\img\\'
 
 
 class JaccardSolver:
@@ -82,7 +82,7 @@ class JaccardSolver:
     def plot(self, intervals1: List[Interval], intervals2: List[Interval], size: int, draw_max: bool = False) -> None:
         self.x_1, self.x_2 = intervals1, intervals2
         r_1, r_2 = self._find_edges()
-        r_1, r_2 = r_1 - 0.5, r_2 + 0.5
+        r_1, r_2 = r_1 - 0.25, r_2 + 0.25
         width = r_2 - r_1
         delta = width / size
 
@@ -123,12 +123,14 @@ class JaccardSolver:
         normalize_coef = 1.0
         max_jaccard = Interval.jaccard_index(self._build_sample(r))
 
-        if normalize:
-            max_moda = len(intervals1) + len(intervals2)
-            normalize_coef = max_jaccard / float(max_moda)
-
         x = [r_1 + i * delta for i in range(size)]
-        y = [Interval.find_moda(self._build_sample(x_k))[0] * normalize_coef for x_k in x]
+        y = [Interval.find_moda(self._build_sample(x_k))[0] for x_k in x]
+        
+        if normalize:
+            max_moda = max(y)
+            normalize_coef = max_jaccard / float(max_moda)
+            y = [y_k * normalize_coef for y_k in y]
+
         y1 = [Interval.jaccard_index(self._build_sample(x_k)) for x_k in x]
             
         plt.plot(x, y, label='intervals in moda')
@@ -160,7 +162,7 @@ class JaccardSolver:
     def plot_moda_r(self, intervals1: List[Interval], intervals2: List[Interval], size: int):
         self.x_1, self.x_2 = intervals1, intervals2
         r_1, r_2 = self._find_edges()
-        r_1, r_2 = r_1 - 0.25, r_2 + 0.25
+        r_1, r_2 = r_1 - 0.05, r_2 + 0.05
         width = r_2 - r_1
         delta = width / size
 

@@ -69,7 +69,7 @@ class IntervalDataBuilder:
         return data, deltas
         
     def make_intervals(self, point_sample: List[float]) -> List[Interval]:
-        eps = 1.0 / (1 << 14) * 100.0
+        eps = 1.0 / (1 << 14) * 1.0
         return [Interval(x - eps, x + eps) for x in point_sample]
     
 
@@ -83,18 +83,24 @@ def main():
     start_pos, end_pos = 500, 700
 
     data, deltas = dataBuilder.load_data(DataSample.kPlus05, 0)
-    sample = [x_k - 0.0 for x_k, delta_k in zip(data, deltas)]
+    sample = [x_k - delta_k for x_k, delta_k in zip(data, deltas)]
     interval_sample1 = dataBuilder.make_intervals(sample)[start_pos:end_pos]
 
     data2, deltas2 = dataBuilder.load_data(DataSample.kMinus05, 42)
-    sample2 = [x_k - 0.0 for x_k, delta_k in zip(data2, deltas2)]
+    sample2 = [x_k - delta_k for x_k, delta_k in zip(data2, deltas2)]
     interval_sample2 = dataBuilder.make_intervals(sample2)[start_pos:end_pos]
 
-    # x = [i for i in range(len(deltas))]
+    #plt.hist(deltas, 7)
+    #plt.show()
 
-    # plt.plot(x, sample2, 'bo')
-    # plt.plot(x, data2, 'go')
-    # plt.show()
+#     x = [i for i in range(len(deltas))]
+
+# #plt.plot(x[:100], data[:100], 'bo')
+#     #plt.plot(x[:100], sample[:100], 'go')
+#     #plt.show()
+
+#     plt.hist(sample, 25)
+#     plt.show()
 
     solver = JaccardSolver()
     solver.plot_intervals([interval_sample1], ['X1'], 'X1', 'X1')
