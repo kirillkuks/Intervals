@@ -51,6 +51,7 @@ class Interval:
             intervals_edges.append(interval.left)
             intervals_edges.append(interval.right)
 
+        intervals_edges = list(set(intervals_edges))
         intervals_edges.sort()
         moda_hist = [0 for _ in range(len(intervals_edges) - 1)]
         moda_bar_intervals = [Interval(0, 0) for _ in range(len(intervals_edges) - 1)]
@@ -99,8 +100,11 @@ class Interval:
     def expand(self, eps: float) -> Interval:
         return Interval(self.left - eps, self.right + eps)
 
-    def to_str(self) -> str:
-        return f'[{self.left}, {self.right}]'
+    def to_str(self, round_num: int = 6, use_math_note: bool = False) -> str:
+        if use_math_note:
+            return f'[{self.left:.{round_num}e}, {self.right:.{round_num}e}]'
+        else:
+            return f'[{round(self.left, round_num)}, {round(self.right, round_num)}]'
     
     def contains(self, val: float) -> bool:
         return self.left <= val <= self.right;

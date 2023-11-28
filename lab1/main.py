@@ -17,6 +17,10 @@ def is_float(value: str) -> bool:
         return True
     except:
         return False
+    
+
+def img_save_dst() -> str:
+    return 'doc\\img\\'
 
 
 class DataSample:
@@ -73,6 +77,24 @@ class IntervalDataBuilder:
         return [Interval(x - eps, x + eps) for x in point_sample]
     
 
+def print_data(data: List[float], deltas: List[float], name: str) -> None:
+    assert len(data) == len(deltas)
+    xs = [i for i in range(len(data))]
+
+    smooth_data = [y_k - d_k for y_k, d_k in zip(data, deltas)]
+    plt.plot(xs, data, 'go', label='raw data')
+    plt.plot(xs, smooth_data, 'bo', label='fixed data')
+    plt.title(f'Raw and Fixed data {name}')
+    plt.legend()
+    plt.savefig(f'{img_save_dst()}FixedData{name}.png', dpi=200)
+    plt.clf()
+
+    plt.hist(deltas, int(len(data) ** 0.5))
+    plt.title(f'Deltas hist {name}')
+    plt.savefig(f'{img_save_dst()}DeltasHist{name}.png', dpi=200)
+    plt.clf()
+    
+
 def main():
     working_dir = os.getcwd()
     working_dir = working_dir[:working_dir.rindex('\\')]
@@ -89,6 +111,9 @@ def main():
     data2, deltas2 = dataBuilder.load_data(DataSample.kMinus05, 42)
     sample2 = [x_k - delta_k for x_k, delta_k in zip(data2, deltas2)]
     interval_sample2 = dataBuilder.make_intervals(sample2)[start_pos:end_pos]
+
+    print_data(data[start_pos:end_pos], deltas[start_pos:end_pos], 'X1')
+    print_data(data2[start_pos:end_pos], deltas2[start_pos:end_pos], 'X2')
 
     #plt.hist(deltas, 7)
     #plt.show()
