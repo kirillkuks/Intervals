@@ -171,12 +171,20 @@
     Соответственно для $ Y_2 $ получили и наиболее узкий коридор совместных значений
     (рис. \ref{p:informSetCorridorY1}, \ref{p:informSetCorridorY2}, \ref{p:informSetCorridorY3}).
 
-    \begin{table}
+    \begin{table}[H]
         \begin{tabular}{| c | c | c |}
-            
+            \hline
+            0 & $ \beta_0 $ & $ \beta_1 $ \\
+            \hline
+            $ Y_1 $ & $ 0.00076 $ & $ 0.86426 $ \\
+            \hline
+            $ Y_2 $ & $ 0.0005 $ & $ 0.85324 $ \\
+            \hline
+            $ Y_3 $ & $ -0.0052 $ & $ 0.85169 $ \\
+            \hline
         \end{tabular}
+        \centering
     \end{table}
-
     
     Видно, что для выборок $ Y_1, Y_2 $ точечная линейная регрессия дала более точный результат,
     близкий к ожидаемому $ \beta_0 = 0.0, \beta_1 = 1.0 $. Для $ Y_3 $ получили более неточную оценку,
