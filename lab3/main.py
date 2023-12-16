@@ -108,8 +108,8 @@ def main():
     responses2 = data_builder.create_interval_sample(False)
 
     for i, responses in enumerate([responses1, responses2]):
-        sample_name = f'RemX{i + 1}'
-        remainder_name = f'RemE{i + 1}'
+        sample_name = f'X{i + 1}'
+        remainder_name = f'E{i + 1}'
 
         regression = LinearRegression(data_sample.factors, responses)
         regression.build_point_regression()
@@ -120,9 +120,9 @@ def main():
         l = remainder_analyzer.get_high_leverage(regression)
         r = remainder_analyzer.get_relative_residual(regression)
 
-        regression = LinearRegression(data_sample.factors, remainders)
-        regression.build_point_regression()
-        regression.build_inform_set()
+        # regression = LinearRegression(data_sample.factors, remainders)
+        # regression.build_point_regression()
+        # regression.build_inform_set()
 
         plotter = Plotter(True)
         plotter.plot_sample(regression.x, regression.y, True, sample_name)

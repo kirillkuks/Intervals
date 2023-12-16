@@ -236,7 +236,7 @@ class Plotter:
         r = self.remainder_analyzer.get_relative_residual(regression)
 
         for i, (l_i, r_i) in enumerate(zip(l, r)):
-            print(f'{regression.x[i]}: {abs(r_i)} -- {1 - l_i} | {abs((1 - l_i) - abs(r_i)) < 1e-10}')
+            print(f'{regression.x[i]}: {abs(r_i)} -- {l_i} | {abs((1 - l_i) - abs(r_i)) < 1e-10}')
             
             if zoom:
                 plt.text(l_i + 0.005, r_i + 0.005, f'x = {round(regression.x[i], 2)}')
@@ -262,6 +262,8 @@ class Plotter:
         plt.plot(l, r, 'bo')
         plt.xlim(xlim.left, xlim.right)
         plt.ylim(ylim.left, ylim.right)
+        plt.xlabel('l(x, y)')
+        plt.ylabel('r(x, y)')
         self._plt_finish(f'{img_save_dst()}DiagramStatus{title}.png', 200)
 
     def _find_min_max_edges_in_corridor(self, x: float, inform_set: Polygon) -> Tuple[float, float]:
