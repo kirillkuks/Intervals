@@ -1,0 +1,179 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./img/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \listoffigures
+    \newpage
+
+    \section{Постановка задачи}
+    Построить линейную регрессию на данных с твинной неопределённостью.
+
+    \section{Теория}
+    \subsection{Твины}
+    \quad В классической интервальной арифметике при любой операции над интервалами происходит расширение неопределённости.
+    Эти операции дают внешнюю оценку результатов вычислений.
+    
+    Для получения более содержательных результатов желательно иметь внутреннюю оценку результатов вычислений в виде интервала.
+    Для решения этой задачи вместо обычных интервалов используется более сложная конструкция - твин.
+    Твин представляет собой составной интервал, определённый следующим образом.
+
+    \begin{equation}
+        \mathbb{T} = [\textbf{t}_{in}, \textbf{T}_{ex}] = \{\textbf{x} \in \mathbb{KR} | \textbf{t}_{in} \subseteq \textbf{x} \subseteq \textbf{T}_{ex} \}
+    \end{equation}
+
+    \subsection{Линейная регрессия}
+    Будем рассматривать линейную модель.
+    \begin{equation}
+        y = \beta_0 + \beta_1 x
+        \label{e:model}
+    \end{equation}
+
+    Подставив в зависимость \ref{e:model} данные для входных переменных $ x_i $, $ i \in \overline{1, n} $
+    и потребовав включения полученного значения в соответствующий интервал $ y_i $, получим
+    \begin{equation}
+        \beta_0 + \beta_1 x_i \in \textbf{y}_i
+        \label{e:modelCondition}
+    \end{equation}
+
+    Что равносильно системе линейных алгебраических уравнений с интервальной правой частью
+    \begin{equation}
+        \begin{cases}
+            \beta_0 + \beta_1 x_1 = \textbf{y}_1 \\
+            \dots \\
+            \beta_0 + \beta_1 x_n = \textbf{y}_n \\
+        \end{cases}
+    \end{equation}
+
+    В случае, когда в правой части твины имеем
+    \begin{equation}
+        \begin{cases}
+            \beta_0 + \beta_1 x_1 = [{\textbf{t}_{in}}_1, {\textbf{T}_{ex}}_1] \\
+            \dots \\
+            \beta_0 + \beta_1 x_n = [{\textbf{t}_{in}}_n, {\textbf{T}_{ex}}_n] \\
+        \end{cases}
+    \end{equation}
+
+    Решая две системы уравнений, для внутренних и внешних оценок, получим два коридора совместных решений.
+    Каждый из коридоров является внутренней и внешней оценкой.
+
+    \section{Реализация}
+    \quad Весь код написан на языке Python (версии 3.7.3).
+    \href{https://github.com/kirillkuks/Intervals/tree/master/course}{Ссылка на GitHub с исходным кодом}.
+
+    \section{Результаты}
+    \quad Данные $ S_X $ были взяты из файлов \textsl{data/dataset2/XV\_spN.txt}, \newline
+    где $ X \in P = \{-0.45, -0.35, -0.25, -0.15, -0.05, 0.05, 0.15, 0.25, 0.35, 0.45 \} $.
+    Набор $ \delta_i $ получен из файла \textsl{data/dataset2/0.0V\_sp443.txt}.
+
+    Внешняя оценка для каждого измерения была получена следующим образом.
+    $ {\textbf{T}_{ex}}_i = [\min{S_i}, \max{S_i}] $, $ i \in P $.
+
+    А внутренняя оценка была получена.
+    $ {\textbf{t}_{in}}_i = [median(S_i) - \varepsilon, median(S_i) + \varepsilon] $, $ \varepsilon = 200.0 $, $ i \in P $.
+
+    Таким образом для $ i $-го измерения имеем неопределённость \newline
+    $ \mathbb{T}_i = [[\min{S_i}, \max{S_i}], [median(S_i) - \varepsilon, median(S_i) + \varepsilon]] $.
+
+    Полученная выборка имеет вид.
+    \plot{TwinSampleX}{Исходная выборка $ X $}{p:sampleX}
+
+    Построим коридор совместных значений для выборки $ X $.
+    \plot{TwinInformSetCorridorX}{Коридор совместных значений для $ X $}{p:informSetCorridorX}
+
+    Сравним информационные множества для внутренней и внешней оценок.
+    \plot{TwinInformSetX}{Информационные множества для внутренней и внешней оценок для $ X $}{p:informSetX}
+
+    Для внутренней оценки измерений получили следующие оценки параметров модели \ref{e:model}:
+    $ \beta_0 = -11.33 $, $ \beta_1 = 15506.67 $.
+    А для внешней: $ \beta_0 = 3.25 $, $ \beta_1 = 15535.0 $. 
+
+    Проведём аналогичные вычисления для выборки остатков $ \mathcal{E} $, полученной следующим образом.
+    $ \mathbb{T}'_i = [{\textbf{t}'_{in}}_i, {\textbf{T}'_{ex}}_i] $,
+    где $ {\textbf{t}'_{in}}_i = {\textbf{t}_{in}}_i - ({\beta_0}_{in} + {\beta_1}_{in} x_i) $,
+    $ {\textbf{T}'_{ex}}_i = {\textbf{T}_{ex}}_i - ({\beta_0}_{ex} + {\beta_1}_{ex} x_i) $.
+
+    Полученная выборка $ \mathcal{E} $ имеет вид.
+    \plot{TwinSampleE}{Выборка остатков $ \mathcal{E} $}{p:sampleE}
+
+    Построим коридор совместных значений для выборки $ \mathcal{E} $.
+    \plot{TwinInformSetCorridorE}{Коридор совместных значений для $ \mathcal{E} $}{p:informSetCorridorE}
+
+    Также сравним информационныке множества для внутренней и внешней оценок.
+    \plot{TwinInformSetE}{Информационные множества для внутренней и внешней оценок для $ \mathcal{E} $}{p:InformSetE}
+
+    Для наглядности рассмотрим ещё одну выборку $ X_1 $, полученную следующим образом.
+    Внутренняя оценка неопределённости:
+    $ {\textbf{t}_{in}}_i = [median(S_i) - \varepsilon, median(S_i) + \varepsilon] $, $ \varepsilon = 25.0 $, $ i \in P $
+    Внешняя оценка неопределённости:
+    $ {\textbf{T}_{ex}}_i = [Q(S_i, 0.375), Q(S_i, 0.625)] $, $ i \in P $, где $ Q(S, q) $ - $ q $ квантиль выборки $ S $.
+
+    Выборка и коридор совместных значений для выборки $ X_1 $ имеют вид.
+    \plot{TwinInformSEtCorridorX1}{Выборка и коридор совместных значений для $ X_1 $}{p:informSetCorridorX1}
+
+    Для внутренней оценки измерений получили следующие оценки параметров модели \ref{e:model}.
+    $ \beta_0 = -11.33, \beta_1 = 15506.67 $.
+    А для внешней: $ \beta_0 = -9.59 $, $ \beta_1 = 15516.37 $.
+    
+    А информационные множества представлены на следующем рисунке.
+    \plot{TwinInformSetX1}{Информационные множества для внутренней и внешней оценок для $ X_1 $}{p:informSetX1}
+
+    Проведём аналогичные вычисления для остатков.
+    Выборка остатков и коридор совместных значений имеют следующий вид.
+    \plot{TwinInformSetCorridorE1}{Выборка и коридор совмеcтных значений для $ \mathcal{E}_1 $}{p:informSetCorridorE1}
+
+    А информационные множества для $ \mathcal{E}_1 $ имеют вид.
+    \plot{TwinInformSetE1}{Информационные множества для внутренней и внешней оценок для $ \mathcal{E}_1 $}{p:informSetE1}
+
+    \section{Обсуждение}
+    \quad Из полученных результатов можно заметить следующее.
+    Для всех рассмотренных выборок информационное множество, полученное для внутренней оценки,
+    содержится в информационном множестве для внешней оценки, что неудивительно, ведь для всех измерений
+    внутренняя оценка содержится во внешней.
+    
+    Также можно отметить, что исходная выборка и полученная из неё выборка остатков имеют
+    схожие по форме информационные множества для обоих оценок - внутренней и внешней
+    (рис. \ref{p:informSetX}, \ref{p:InformSetE}, \ref{p:informSetX1}, \ref{p:informSetE1}).
+    Информационные множества отличаются только сдвигом вдоль осей $ \beta_0, \beta_1 $.
+
+    На рис. \ref{p:informSetX}, \ref{p:InformSetE} и \ref{p:informSetX1}, \ref{p:informSetE1} видно,
+    что информационное множество для внутренней оценки схоже по форме с информационным множеством для внешней оценки.
+    При этом информационное множество, которое представляет из себя многоугольник,
+    для внутренней оценки имеет не больше вершин, чем для внешней.
+    Тогда можно предположить, что для внутренняя оценка измерений имеет не большее количество граничных измерений, чем внешняя.
+
+\end{document}
